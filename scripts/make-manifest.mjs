@@ -1,6 +1,6 @@
 ﻿// scripts/make-manifest.mjs
 //
-// Rebuilds photos.json at the repo root from the images in photos/.
+// Rebuilds photos.json (touch to trigger a manifest run) at the repo root from the images in photos/.
 // Entries use absolute raw.githubusercontent.com URLs so the TV can load
 // them directly (raw.githubusercontent sends Access-Control-Allow-Origin: *).
 //

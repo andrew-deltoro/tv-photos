@@ -1,4 +1,4 @@
-name: manifest
+﻿name: manifest
 
 # Rebuilds photos.json whenever a photo lands in photos/.
 # This is what makes phone uploads hands-off: the Shortcut PUTs the image,
@@ -6,6 +6,7 @@ name: manifest
 
 on:
   push:
+    branches: [main]
     paths:
       - 'photos/**'
       - 'scripts/make-manifest.mjs'
@@ -43,5 +44,5 @@ jobs:
             echo "no change"
           else
             git commit -m "photos: rebuild manifest"
-            git push
+            git push origin HEAD:main
           fi
