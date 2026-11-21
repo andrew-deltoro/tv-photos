@@ -36,23 +36,38 @@ jobs:
         run: node scripts/make-manifest.mjs
 
       - name: Commit if changed
+        env:
+          REPO_SLUG: ${{ github.repository }}
+          REPO_BRANCH: ${{ github.ref_name }}
         run: |
           git config user.name "photos-bot"
           git config user.email "photos-bot@users.noreply.github.com"
-          git add photos.json
-          if git diff --staged --quiet; then
-            echo "no change"
-            exit 0
-          fi
-          git commit -m "photos: rebuild manifest"
-          # Uploading several photos at once fires several runs; whichever
-          # pushes second is rejected as non-fast-forward. Rebase and retry.
-          for attempt in 1 2 3; do
-            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+
+          # Bulk uploads fire several of these runs at once, so two jobs can
+          # both regenerate photos.json and one loses the push. Rebasing that
+          # commit produces a real conflict, so instead: sync to the latest
+          # remote state, regenerate from *those* files, then push. Each
+          # attempt starts clean, which makes a conflict impossible.
+          for attempt in 1 2 3 4 5; do
+            git rebase --abort 2>/dev/null || true
+            git fetch --quiet origin main
+            git reset --hard --quiet origin/main
+
+            node scripts/make-manifest.mjs
+
+            if git diff --quiet -- photos.json; then
+              echo "no change"
+              exit 0
+            fi
+
+            git add photos.json
+            git commit -m "photos: rebuild manifest" --quiet
+            if git push origin HEAD:main; then
               echo "pushed on attempt $attempt"
               exit 0
             fi
+            echo "push rejected, retrying ($attempt)"
             sleep 5
           done
-          echo "could not push after 3 attempts" >&2
+          echo "could not push after 5 attempts" >&2
           exit 1

@@ -52,3 +52,4 @@ const items = files.map((file) => ({
 writeFileSync(OUT, JSON.stringify(items, null, 2) + '\n');
 console.log(`wrote ${OUT} with ${items.length} photos`);
 // (touch: verify manifest retry)
+// (touch: verify conflict-free manifest run)
