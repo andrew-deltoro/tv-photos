@@ -1,4 +1,4 @@
-﻿name: manifest
+name: manifest
 
 # Rebuilds photos.json whenever a photo lands in photos/.
 # This is what makes phone uploads hands-off: the Shortcut PUTs the image,
@@ -42,7 +42,17 @@ jobs:
           git add photos.json
           if git diff --staged --quiet; then
             echo "no change"
-          else
-            git commit -m "photos: rebuild manifest"
-            git push origin HEAD:main
+            exit 0
           fi
+          git commit -m "photos: rebuild manifest"
+          # Uploading several photos at once fires several runs; whichever
+          # pushes second is rejected as non-fast-forward. Rebase and retry.
+          for attempt in 1 2 3; do
+            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+              echo "pushed on attempt $attempt"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "could not push after 3 attempts" >&2
+          exit 1
