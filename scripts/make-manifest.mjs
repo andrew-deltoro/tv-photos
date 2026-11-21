@@ -1,4 +1,4 @@
-// scripts/make-manifest.mjs
+﻿// scripts/make-manifest.mjs
 //
 // Rebuilds photos.json (touch to trigger a manifest run) at the repo root from the images in photos/.
 // Entries use absolute raw.githubusercontent.com URLs so the TV can load
@@ -51,3 +51,4 @@ const items = files.map((file) => ({
 
 writeFileSync(OUT, JSON.stringify(items, null, 2) + '\n');
 console.log(`wrote ${OUT} with ${items.length} photos`);
+// (touch: verify manifest retry)
